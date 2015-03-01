@@ -1,0 +1,44 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.gscasu.yourwords.DetailActivity$PlaceholderFragment">
+
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_headword_view"
+        android:fontFamily="sans-serif-condensed"
+        android:textAppearance="?android:textAppearanceLarge"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_pos_view"
+        android:fontFamily="sans-serif-light"
+        android:textAppearance="?android:textAppearanceSmall"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_definition_view"
+        android:fontFamily="sans-serif-condensed"
+        android:textAppearance="?android:textAppearanceMedium"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_transcription_view"
+        android:fontFamily="sans-serif-light"
+        android:textAppearance="?android:textAppearanceSmall"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_example_view"
+        android:fontFamily="sans-serif-condensed"
+        android:textAppearance="?android:textAppearanceMedium"
+        />
+
+</LinearLayout>

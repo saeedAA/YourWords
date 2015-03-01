@@ -1,8 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Note when copying: Make sure you remove the existing AppTheme declared in the styles file -->
 
-    <!-- Base application theme. -->
+    <!-- Base application theme -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+        <item name="actionBarStyle">@style/ActionBar.Solid.YourWords</item>
     </style>
 
+    <!-- ActionBar style -->
+    <style name="ActionBar.Solid.YourWords"
+        parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+        <item name="background">@color/yourwords_red</item>
+    </style>
+
+    <!-- Main activity theme -->
+    <style name="WordsTheme" parent="AppTheme">
+        <item name="actionBarStyle">@style/ActionBar.Solid.YourWords.NoTitle</item>
+    </style>
+
+    <!-- Main activity action bar style -->
+    <style name="ActionBar.Solid.YourWords.NoTitle"
+        parent="@style/ActionBar.Solid.YourWords">
+        <item name="displayOptions">useLogo|showHome</item>
+        <item name="logo">@drawable/ic_launcher</item>
+    </style>
+    <style name="WordsListStyle">
+        <item name="android:choiceMode">none</item>
+    </style>
 </resources>

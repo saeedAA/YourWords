@@ -1,119 +1,151 @@
 package com.gscasu.yourwords;
 
-import android.net.Uri;
-import android.os.AsyncTask;
+import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONException;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.XMLReader;
+import com.gscasu.yourwords.data.WordsContract;
+import com.gscasu.yourwords.service.WordsService;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
+import java.util.ArrayList;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+public class WordsFragment extends Fragment implements LoaderCallbacks<Cursor>{
 
-public class WordsFragment extends Fragment {
+    EditText mSearchText;
+    Button mSearchButton;
+
+    private final int WORDS_LOADER = 0;
+
+    private final String[] WORDS_COLUMNS = {
+            WordsContract.WordsEntry._ID,
+            WordsContract.WordsEntry.COLUMN_ONLINE_ID,
+            WordsContract.WordsEntry.COLUMN_HEADWORD,
+            WordsContract.WordsEntry.COLUMN_PART_OF_SPEECH,
+    };
+
+    public static final int COL_ID = 0;
+    public static final int COL_ONLINE_ID = 1;
+    public static final int COL_HEADWORD = 2;
+    public static final int COL_PORT_OF_SPEECH = 3;
+
+
+    private static final String SCROLL_POSITION_KEY = "scroll_pos";
+
+    private WordsAdapter mWordsAdapter = null;
+    private ListView mWordsListView;
+    private int mScrollPosition;
 
     public WordsFragment() {
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        getLoaderManager().initLoader(WORDS_LOADER, null, this);
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.activity_words, container, false);
+        if(savedInstanceState != null && savedInstanceState.containsKey(SCROLL_POSITION_KEY)) {
+            mScrollPosition = savedInstanceState.getInt(SCROLL_POSITION_KEY);
+        }
+        View rootView = inflater.inflate(R.layout.words_fragment, container, false);
+        mWordsListView = (ListView) rootView.findViewById(R.id.words_listView);
+        mSearchText = (EditText) rootView.findViewById(R.id.search_words_edit_text);
+        mSearchButton = (Button) rootView.findViewById(R.id.search_words_btn);
+        Button clear = (Button) rootView.findViewById(R.id.clear_words_btn);
+
+        clear.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                getActivity().getContentResolver().delete(
+                        WordsContract.WordsEntry.CONTENT_URI,
+                        null,
+                        null
+                );
+            }
+        });
+
+        mWordsAdapter = new WordsAdapter(getActivity(),null,0);
+        mWordsListView.setAdapter(mWordsAdapter);
+
+        mWordsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                Cursor cursor = mWordsAdapter.getCursor();
+                if(cursor != null) {
+                    cursor.moveToPosition(position);
+                    mScrollPosition = position;
+                    //mScrollPosition = position;
+                    ((Callback)getActivity()).onItemSelected(cursor.getString(COL_ONLINE_ID),
+                            cursor.getString(COL_HEADWORD));
+                }
+            }
+        });
+
+        mSearchButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), WordsService.class);
+                intent.putExtra(DetailActivity.HEADWORD_KEY, mSearchText.getText().toString());
+                getActivity().startService(intent);
+            }
+        });
+
         return rootView;
     }
 
     @Override
-    public void onStart() {
-        GetWordDefinitions getWordDefinitions = new GetWordDefinitions();
-        getWordDefinitions.execute();
-        super.onStart();
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Log.v("LoaderCursor", "updating..");
+        return new CursorLoader(
+                getActivity(),
+                WordsContract.WordsEntry.buildHeadword(mSearchText.getText().toString()),
+                WORDS_COLUMNS,
+                null,
+                null,
+                null
+        );
     }
 
-    private class GetWordDefinitions extends AsyncTask<Void, Void, Void> {
-        private final String LOG_TAG = GetWordDefinitions.class.getSimpleName();
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.v("LoaderCursor", "Count of: " + data.getCount());
+        mWordsAdapter.swapCursor(data);
+        mWordsListView.smoothScrollToPosition(mScrollPosition);
+    }
 
-        @Override
-        protected Void doInBackground(Void... params) {
-            HttpURLConnection urlConnection;
-            BufferedReader reader = null;
-            String responseStr = null;
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mWordsAdapter.swapCursor(null);
+    }
 
-            try{
-                Uri.Builder builder = new Uri.Builder();
-                builder.scheme("https").authority("api.pearson.com").appendPath("v2")
-                        .appendPath("dictionaries")
-                        .appendPath("ldoce5")
-                        .appendPath("entries")
-                        .appendQueryParameter("headword","black");
+    public interface Callback {
+        /**
+         * Callback for when an item has been selected.
+         */
+        public void onItemSelected(String onlineId, String headword);
+    }
 
-
-                URL url = new URL(builder.toString());
-                Log.v(LOG_TAG, url.toString());
-
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                Log.v(LOG_TAG, "word sent..");
-
-                //Receive into input stream
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-                responseStr = buffer.toString();
-                Log.v(LOG_TAG,responseStr);
-
-                return null;
-
-            } catch (MalformedURLException e) {
-                Log.e(LOG_TAG,e.toString());
-            } catch (ProtocolException e) {
-                Log.e(LOG_TAG,e.toString());
-            } catch (IOException e) {
-                Log.e(LOG_TAG, e.toString());
-            }
-            return null;
-        }
-
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(SCROLL_POSITION_KEY, mScrollPosition);
     }
 }

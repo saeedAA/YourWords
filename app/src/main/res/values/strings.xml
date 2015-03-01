@@ -4,5 +4,10 @@
     <string name="app_name">YourWords</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="action_share">Share</string>
+
+    <string name="btn_search">Search</string>
+    <string name="btn_clear">Clear</string>
+    <string name="title_activity_detail">DetailActivity</string>
 
 </resources>

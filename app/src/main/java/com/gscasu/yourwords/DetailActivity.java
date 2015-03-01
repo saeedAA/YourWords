@@ -13,21 +13,30 @@ import android.view.ViewGroup;
 import android.os.Build;
 
 
-public class MainActivity extends ActionBarActivity implements WordsFragment.Callback{
-    public boolean mTwoPane;
+public class DetailActivity extends ActionBarActivity {
+
+    public static final String HEADWORD_KEY = "headword_key";
+    public static final String ONLINE_ID_KEY = "online_id_key";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        if(findViewById(R.id.detail_container)!=null){
-            mTwoPane = true;
+        setContentView(R.layout.activity_detail);
+        Intent intent = getIntent();
+        if(intent != null && intent.hasExtra(HEADWORD_KEY) && intent.hasExtra(ONLINE_ID_KEY)) {
+            String headword = intent.getExtras().getString(HEADWORD_KEY);
+            String onlineId = intent.getExtras().getString(ONLINE_ID_KEY);
+            Bundle args = new Bundle();
+            args.putString(HEADWORD_KEY, headword);
+            args.putString(ONLINE_ID_KEY, onlineId);
+            DetailFragment detailFragment = new DetailFragment();
+            detailFragment.setArguments(args);
+
             if (savedInstanceState == null) {
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.detail_container, new DetailFragment()).commit();
+                        .add(R.id.container, detailFragment)
+                        .commit();
             }
-        } else {
-            mTwoPane = false;
         }
     }
 
@@ -35,7 +44,7 @@ public class MainActivity extends ActionBarActivity implements WordsFragment.Cal
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        //getMenuInflater().inflate(R.menu.menu_detail, menu);
         return true;
     }
 
@@ -52,24 +61,5 @@ public class MainActivity extends ActionBarActivity implements WordsFragment.Cal
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onItemSelected(String onlineId, String headword) {
-        if(mTwoPane == true){
-            Bundle args = new Bundle();
-            args.putString(DetailActivity.HEADWORD_KEY, headword);
-            args.putString(DetailActivity.ONLINE_ID_KEY, onlineId);
-            DetailFragment fragment = new DetailFragment();
-            fragment.setArguments(args);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.detail_container, fragment).commit();
-
-        } else if(mTwoPane == false) {
-            Intent wordToDetails = new Intent(this, DetailActivity.class);
-            wordToDetails.putExtra(DetailActivity.HEADWORD_KEY, headword)
-                    .putExtra(DetailActivity.ONLINE_ID_KEY, onlineId);
-            startActivity(wordToDetails);
-        }
     }
 }
