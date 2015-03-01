@@ -27,6 +27,7 @@ public class DetailFragment extends Fragment implements LoaderCallbacks<Cursor> 
     private TextView mDefinitionView;
     private TextView mTranscriptionView;
     private TextView mExampleView;
+    private String mWordShare;
     private ShareActionProvider mShareActionProvider;
 
     private final String LOG_TAG = DetailFragment.class.getSimpleName();
@@ -61,7 +62,6 @@ public class DetailFragment extends Fragment implements LoaderCallbacks<Cursor> 
         inflater.inflate(R.menu.menu_detail, menu);
         MenuItem item = menu.findItem(R.id.action_share);
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
-
         if (mShareActionProvider != null) {
             mShareActionProvider.setShareIntent(createShareWordIntent());
         } else {
@@ -96,6 +96,7 @@ public class DetailFragment extends Fragment implements LoaderCallbacks<Cursor> 
             Log.v(LOG_TAG, "Headword: " + mHeadword + " with online Id: " + mOnlineId);
         }
 
+
         return rootView;
     }
 
@@ -120,6 +121,16 @@ public class DetailFragment extends Fragment implements LoaderCallbacks<Cursor> 
             mDefinitionView.setText(data.getString(COL_DEF));
             mTranscriptionView.setText(data.getString(COL_TRANS));
             mExampleView.setText(data.getString(COL_EXAMPLE));
+            mWordShare = data.getString(COL_HEADWORD) + "\n"
+                    + data.getString(COL_POS) + "\n"
+                    + data.getString(COL_DEF) + "\n"
+                    + data.getString(COL_TRANS) + "\n"
+                    + data.getString(COL_EXAMPLE) + "\n";
+            if (mShareActionProvider != null) {
+                mShareActionProvider.setShareIntent(createShareWordIntent());
+            } else {
+                Log.d(LOG_TAG, "Actionprovider equals null");
+            }
         }
     }
 
@@ -130,15 +141,9 @@ public class DetailFragment extends Fragment implements LoaderCallbacks<Cursor> 
 
     private Intent createShareWordIntent() {
         Intent shareIntent = new Intent();
-        String wordShare = mHeadwordView.getText() + "\n"
-                + mPosView.getText() + " \n"
-                + mDefinitionView.getText() + " \n"
-                + mExampleView.getText() + " \n"
-                + mTranscriptionView.getText();
         shareIntent.setAction(Intent.ACTION_SEND);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-        shareIntent.putExtra(Intent.EXTRA_TEXT, wordShare + " #YourWords");
-        shareIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON,R.drawable.ic_launcher);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, mWordShare + " #YourWords");
         shareIntent.setType("text/plain");
         return shareIntent;
     }

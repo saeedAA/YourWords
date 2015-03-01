@@ -69,7 +69,7 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                         .setContentTitle(context.getString(R.string.app_name))
                         .setContentText(notificationText)
-                        .setSmallIcon(R.drawable.ic_launcher)
+                        .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentIntent(pendingIntent);
 
                 NotificationManager mNotificationManager =

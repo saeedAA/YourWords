@@ -22,7 +22,7 @@
     <style name="ActionBar.Solid.YourWords.NoTitle"
         parent="@style/ActionBar.Solid.YourWords">
         <item name="displayOptions">useLogo|showHome</item>
-        <item name="logo">@drawable/ic_launcher</item>
+        <item name="logo">@drawable/ic_logo</item>
     </style>
     <style name="WordsListStyle">
         <item name="android:choiceMode">none</item>
