@@ -1,5 +1,6 @@
 package com.gscasu.yourwords;
 
+import android.app.LoaderManager;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -105,6 +106,8 @@ public class WordsFragment extends Fragment implements LoaderCallbacks<Cursor>{
                 Intent intent = new Intent(getActivity(), WordsService.class);
                 intent.putExtra(DetailActivity.HEADWORD_KEY, mSearchText.getText().toString());
                 getActivity().startService(intent);
+                getLoaderManager().restartLoader(WORDS_LOADER, null, WordsFragment.this);
+
             }
         });
 
